@@ -34,18 +34,12 @@ def main():
     # sample randomly position in 3D
     lorenz_points = np.random.rand(n_points, 3)
 
-    colors = np.zeros((n_points, 3), dtype=np.uint8)
-    colors[:, 0] = (lorenz_points[:, 0] * 255).astype(np.uint8)  # Red channel.
-    colors[:, 1] = (lorenz_points[:, 1] * 255).astype(np.uint8)  # Green channel.
-    colors[:, 2] = (lorenz_points[:, 2] * 255).astype(np.uint8)  # Blue channel.
+    n_trail = 30
+    point_sizes = np.linspace(0.1, 0.01, n_trail + 1)
+    lorenz_trail = [lorenz_points] * (n_trail + 1)
 
-    server.scene.add_point_cloud(
-        name="/lorenz_cloud",
-        points=lorenz_points,
-        colors=colors,
-        point_size=0.5,
-
-    )
+    print(type(lorenz_trail))
+    # colors = np.zeros((n_points, 3), dtype=np.uint8)
 
  
     print("Visit: http://localhost:8080")
@@ -58,14 +52,24 @@ def main():
         time.sleep(time_step)
 
         lorenz_points = update_lorenz(lorenz_points, time_step)
+        
+        # shift points in lorenz_trail
+        for i in range(len(lorenz_trail) - 2, -1, -1):
+            lorenz_trail[i+1] = lorenz_trail[i]
 
-        server.scene.add_point_cloud(
-            name="/lorenz_cloud",
-            points=lorenz_points,
-            colors=colors,
-            point_size=0.5,
-            point_shape = "rounded"
-        )
+        lorenz_trail[0] = lorenz_points
+
+
+        # display lorenz_trail
+        for i in range(len(lorenz_trail)):
+
+            server.scene.add_point_cloud(
+                name="/lorenz_cloud_" + str(i),
+                points=lorenz_trail[i],
+                colors=(0, 0, 0), 
+                point_size=point_sizes[i],
+                point_shape = "rounded"
+            )
 
 
 
