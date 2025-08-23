@@ -5,18 +5,18 @@ import viser
 
 
 def update_lorenz(points, time_step):
-    # σ = 10
-    # ρ = 28
-    # β = 8/3
+    sigma = 10.
+    ro = 28.
+    beta = 8./3.
     for i in range(len(points)):
 
         x = points[i, 0]
         y = points[i, 1]
         z = points[i, 2]
 
-        dx = 10 * (y - x)
-        dy = x * (28 - z) - y
-        dz = x * y - 8.0/3.0 * z
+        dx = sigma * (y - x)
+        dy = x * (ro - z) - y
+        dz = x * y - beta * z
 
         x = x + time_step * dx
         y = y + time_step * dy
