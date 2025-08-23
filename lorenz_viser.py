@@ -45,11 +45,10 @@ def main():
     blue_color = np.zeros(n_trail+1, dtype=np.uint8) 
 
     red2yellow_gradient = np.stack([red_color, gradient_green, blue_color], axis=1) 
-    print(red2yellow_gradient.shape)
+
     print("Visit: http://localhost:8080")
 
     time_step = 0.01
-
 
     while True:
 
@@ -57,22 +56,14 @@ def main():
 
         lorenz_points = update_lorenz(lorenz_points, time_step)
         
-        # print difference between updated points and the last index
-
-        # diff = lorenz_points - lorenz_trail[0]
-        # print(diff)
-        # shift points in lorenz_trail
+        # shift points in lorenz_trail, start from the back
         for i in range(len(lorenz_trail) - 2, -1, -1):
-            # print(i+1, i)
             lorenz_trail[i+1] = lorenz_trail[i].copy()
-
 
         lorenz_trail[0] = lorenz_points.copy()
 
-
         # display lorenz_trail
         for i in range(len(lorenz_trail)):
-            # print("lorenz_trail", i)
             server.scene.add_point_cloud(
                 name="/lorenz_cloud_" + str(i),
                 points=lorenz_trail[i],
