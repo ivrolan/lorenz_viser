@@ -4,8 +4,8 @@ import numpy as np
 import viser
 
 
-N_POINTS = 40
-N_TRAIL = 25
+N_POINTS = 35
+N_TRAIL = 30
 
 MAX_SIZE = 0.3
 MIN_SIZE = 0.1
@@ -31,8 +31,19 @@ def update_lorenz(points, dt, sigma = 10., ro = 28., beta = 8./3.):
         points[i, 2] = z
     return points
 
+
+server = viser.ViserServer()
+
+@server.on_client_connect
+def _(client: viser.ClientHandle) -> None:
+    # only modify the camera the first time a client is connected
+    
+    # values taken from a previous run
+    client.camera.wxyz = np.array([ 0.50376306, -0.79778261, -0.28013392,  0.1768917 ])
+    client.camera.position = np.array([ 30.82498183, -41.40886391,  44.93191464])
+    client.camera.fov = 1.3089969389957472
+
 def main():
-    server = viser.ViserServer()
 
     # sample randomly position in 3D
     lorenz_points = np.random.rand(N_POINTS, 3)
@@ -46,8 +57,6 @@ def main():
     blue_color = np.zeros(N_TRAIL+1, dtype=np.uint8) 
 
     red2yellow_gradient = np.stack([red_color, gradient_green, blue_color], axis=1) 
-
-    print("Visit: http://localhost:8080")
 
     while True:
 
