@@ -8,7 +8,12 @@ N_POINTS = 70
 N_TRAIL = 30
 
 MAX_SIZE = 0.3
-MIN_SIZE = 0.1
+MIN_SIZE = 0.2
+
+LINE_WIDTH = 3.0
+
+SHAPE_TO_USE = "LINES" # check shape to use: ["LINES", "POINTS"]
+assert SHAPE_TO_USE in ["LINES", "POINTS"]
 
 TIME_STEP = 0.01
 
@@ -60,13 +65,36 @@ def main():
         lorenz_trail.insert(0, lorenz_points.copy())
         
         # display lorenz_trail
-        for i in range(len(lorenz_trail)):
-            server.scene.add_point_cloud(
-                name="/lorenz_cloud_" + str(i),
-                points=lorenz_trail[i],
-                colors=red2yellow_gradient[i, :], 
-                point_size=point_sizes[i],
-                point_shape = "rounded"
+        if SHAPE_TO_USE == "POINTS":
+            for i in range(len(lorenz_trail)):
+                server.scene.add_point_cloud(
+                    name="/lorenz_cloud_" + str(i),
+                    points=lorenz_trail[i],
+                    colors=red2yellow_gradient[i, :], 
+                    point_size=point_sizes[i], # we need the for loop to give different point_sizes
+                    point_shape = "rounded"
+                )
+        elif SHAPE_TO_USE == "LINES": # check for redundancy
+            all_starts = np.vstack(lorenz_trail[:-1])
+            all_ends = np.vstack(lorenz_trail[1:])
+
+            # stack to get the shape (N, 2, 3) required by add_line_segments,
+            # where N = N_TRAIL * N_POINTS.
+            line_points = np.stack([all_starts, all_ends], axis=1)
+
+            # create start and end colors for the line segments to match the gradient.
+            color_starts = np.repeat(red2yellow_gradient[:-1], repeats=N_POINTS, axis=0)
+            color_ends = np.repeat(red2yellow_gradient[1:], repeats=N_POINTS, axis=0)
+
+            # stack to get the shape (N, 2, 3) for per-vertex coloring.
+            line_colors = np.stack([color_starts, color_ends], axis=1)
+
+            # add all line segments
+            server.scene.add_line_segments(
+                name="/lorenz_trail",
+                points=line_points,
+                colors=line_colors,
+                line_width=LINE_WIDTH,
             )
 
 
