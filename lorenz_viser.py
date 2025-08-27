@@ -4,7 +4,7 @@ import numpy as np
 import viser
 
 
-N_POINTS = 35
+N_POINTS = 70
 N_TRAIL = 30
 
 MAX_SIZE = 0.3
@@ -13,22 +13,13 @@ MIN_SIZE = 0.1
 TIME_STEP = 0.01
 
 def update_lorenz(points, dt, sigma = 10., ro = 28., beta = 8./3.):
-    for i in range(len(points)):
+    x, y, z = points[:, 0], points[:, 1], points[:, 2]
 
-        x = points[i, 0]
-        y = points[i, 1]
-        z = points[i, 2]
+    dx = sigma * (y - x)
+    dy = x * (ro - z) - y
+    dz = x * y - beta * z
 
-        dx = sigma * (y - x)
-        dy = x * (ro - z) - y
-        dz = x * y - beta * z
-
-        x = x + dt * dx
-        y = y + dt * dy
-        z = z + dt * dz
-        points[i, 0] = x
-        points[i, 1] = y
-        points[i, 2] = z
+    points += dt * np.stack([dx, dy, dz], axis=1)
     return points
 
 
@@ -48,10 +39,11 @@ def main():
     # sample randomly position in 3D
     lorenz_points = np.random.rand(N_POINTS, 3)
 
-    
-    point_sizes = np.linspace(MAX_SIZE, MIN_SIZE, N_TRAIL + 1)
+    # The trail list stores the history of points.
     lorenz_trail = [lorenz_points.copy()] * (N_TRAIL + 1)
-
+    point_sizes = np.linspace(MAX_SIZE, MIN_SIZE, N_TRAIL + 1)
+    
+    # Define the color gradient for the trails from yellow to red.
     red_color = np.full(N_TRAIL+1, 255, dtype=np.uint8)
     gradient_green = np.linspace(0, 255, N_TRAIL+1, dtype=np.uint8)
     blue_color = np.zeros(N_TRAIL+1, dtype=np.uint8) 
@@ -59,17 +51,14 @@ def main():
     red2yellow_gradient = np.stack([red_color, gradient_green, blue_color], axis=1) 
 
     while True:
-
         time.sleep(TIME_STEP)
 
         lorenz_points = update_lorenz(lorenz_points, TIME_STEP)
         
-        # shift points in lorenz_trail, start from the back
-        for i in range(len(lorenz_trail) - 2, -1, -1):
-            lorenz_trail[i+1] = lorenz_trail[i].copy()
-
-        lorenz_trail[0] = lorenz_points.copy()
-
+        # shift points in lorenz_trail
+        lorenz_trail.pop()
+        lorenz_trail.insert(0, lorenz_points.copy())
+        
         # display lorenz_trail
         for i in range(len(lorenz_trail)):
             server.scene.add_point_cloud(
