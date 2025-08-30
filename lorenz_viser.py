@@ -10,7 +10,7 @@ N_TRAIL = 30
 MAX_SIZE = 0.3
 MIN_SIZE = 0.2
 
-LINE_WIDTH = 3.0
+LINE_WIDTH = 4.0
 
 SHAPE_TO_USE = "LINES" # check shape to use: ["LINES", "POINTS"]
 assert SHAPE_TO_USE in ["LINES", "POINTS"]
