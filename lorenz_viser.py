@@ -17,14 +17,27 @@ assert SHAPE_TO_USE in ["LINES", "POINTS"]
 
 TIME_STEP = 0.01
 
-def update_lorenz(points, dt, sigma = 10., ro = 28., beta = 8./3.):
-    x, y, z = points[:, 0], points[:, 1], points[:, 2]
+def update_lorenz(points, dt, sigma = 10., ro = 28., beta = 8./3., integration="rk4"):
+    def lorenz_dot(u):
+        x, y, z = u[:, 0], u[:, 1], u[:, 2]
 
-    dx = sigma * (y - x)
-    dy = x * (ro - z) - y
-    dz = x * y - beta * z
+        dx = sigma * (y - x)
+        dy = x * (ro - z) - y
+        dz = x * y - beta * z
 
-    points += dt * np.stack([dx, dy, dz], axis=1)
+        return np.stack([dx, dy, dz], axis=1)
+
+    ## RK4
+    if integration == "rk4":
+        k1 = lorenz_dot(points)
+        k2 = lorenz_dot(points + dt * k1 / 2.)
+        k3 = lorenz_dot(points + dt * k2 / 2.)
+        k4 = lorenz_dot(points + dt * k3)
+        points += dt / 6. * (k1 + 2*k2 + 2*k3 + k4)
+    elif integration == "euler":
+        points += dt * lorenz_dot(points)
+    else:
+        raise ValueError(f"Integration chosen: {integration} is not valid. Choose [rk4 | euler]")
     return points
 
 
@@ -58,7 +71,7 @@ def main():
     while True:
         time.sleep(TIME_STEP)
 
-        lorenz_points = update_lorenz(lorenz_points, TIME_STEP)
+        lorenz_points = update_lorenz(lorenz_points, TIME_STEP, integration="euler") # euler diverges faster
         
         # shift points in lorenz_trail
         lorenz_trail.pop()
